@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neurofence-sdk"
+version = "1.0.0"
+description = "NeuroFence SDK - framework-agnostic interception wrapper and API client"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "requests>=2.28",
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+include = ["neurofence_sdk", "neurofence_sdk.*"]

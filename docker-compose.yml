@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15
+    container_name: neurofence-db
+    environment:
+      POSTGRES_DB: neurofence_hack
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - neurofence_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d neurofence_hack"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+    container_name: neurofence-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Point app at the compose Postgres service
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/neurofence_hack
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: neurofence_hack
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+
+      EMBEDDING_MODEL: all-MiniLM-L6-v2
+      CONTAMINATION_THRESHOLD: "0.70"
+      ISOLATION_ENABLED: "true"
+
+      # Optional (leave unset if not using)
+      OPENAI_API_KEY: ""
+    ports:
+      - "8000:8000"
+
+volumes:
+  neurofence_pgdata:
