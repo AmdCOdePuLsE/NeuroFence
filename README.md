@@ -129,6 +129,26 @@ cd C:\path\to\NeuroFence
 pip install -e .
 ```
 
+Optional CLI (after install):
+
+```powershell
+# If your venv is activated:
+neurofence health --url http://localhost:8000
+
+# If you don't want to rely on PATH/venv activation:
+python -m neurofence_sdk.cli health --url http://localhost:8000
+```
+
+### Deploy anywhere (not just localhost)
+
+NeuroFence is an HTTP service. You can run it on:
+
+- a VM/server and point your app to `http://<server-ip>:8000`
+- Kubernetes (Service/Ingress)
+- a Docker host (recommended for teams)
+
+Once deployed, set the SDK `base_url` to that address (see docs/INTEGRATION.md).
+
 NeuroFence can run as a standalone service and **enforce interception** as long as you integrate at an enforcement point.
 
 Two universal patterns:

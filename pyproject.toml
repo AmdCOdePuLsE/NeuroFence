@@ -12,6 +12,9 @@ dependencies = [
   "requests>=2.28",
 ]
 
+[project.scripts]
+neurofence = "neurofence_sdk.cli:main"
+
 [tool.setuptools]
 package-dir = {"" = "."}
 

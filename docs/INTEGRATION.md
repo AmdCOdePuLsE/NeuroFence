@@ -15,6 +15,8 @@ Core endpoint:
 - Docker (Windows): run `./run-neurofence.cmd` from the repo root
 - Confirm it’s up: `http://localhost:8000/health`
 
+You are not limited to localhost. In production you typically run NeuroFence on a VM, in Kubernetes, or as a Docker container on a server and point your app at that URL.
+
 2) Install the SDK into your project
 
 You can install the SDK like other Python libraries (from VS Code terminal):
@@ -62,6 +64,33 @@ send_message = wrap_send(
 
 That’s it: every message is checked via `POST /intercept` before it’s delivered.
 
+
+## Use a remote NeuroFence URL (not localhost)
+
+Your app should point to wherever NeuroFence is deployed:
+
+- VM / server: `http://10.0.0.25:8000`
+- Domain + TLS: `https://neurofence.yourcompany.com`
+- Kubernetes service (in-cluster): `http://neurofence.default.svc.cluster.local:8000`
+
+Example:
+
+```python
+send_message = wrap_send(send_message, base_url="https://neurofence.yourcompany.com")
+```
+
+## CLI (optional)
+
+After installing `neurofence-sdk`, you get a small CLI for quick checks:
+
+```powershell
+# If your virtualenv is activated, you can use `neurofence ...` directly.
+
+# Venv-agnostic alternative:
+python -m neurofence_sdk.cli health --url http://localhost:8000
+python -m neurofence_sdk.cli intercept --url http://localhost:8000 --sender a --recipient b --content "hello"
+python -m neurofence_sdk.cli init --url http://localhost:8000
+```
 ## Pick your enforcement point (coverage vs effort)
 
 ### Option A: Message bus / `send()` wrapper (best coverage)
