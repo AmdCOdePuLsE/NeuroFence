@@ -52,21 +52,22 @@ send_message = wrap_send(
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="neurofence", description="NeuroFence SDK CLI")
-    p.add_argument("--url", default="http://localhost:8000", help="NeuroFence base URL")
-    p.add_argument("--timeout", type=float, default=10.0, help="HTTP timeout seconds")
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--url", default="http://localhost:8000", help="NeuroFence base URL")
+    common.add_argument("--timeout", type=float, default=10.0, help="HTTP timeout seconds")
 
     sub = p.add_subparsers(dest="command", required=True)
 
-    h = sub.add_parser("health", help="Check NeuroFence /health")
+    h = sub.add_parser("health", help="Check NeuroFence /health", parents=[common])
     h.set_defaults(func=cmd_health)
 
-    i = sub.add_parser("intercept", help="Call NeuroFence /intercept")
+    i = sub.add_parser("intercept", help="Call NeuroFence /intercept", parents=[common])
     i.add_argument("--sender", required=True)
     i.add_argument("--recipient", default=None)
     i.add_argument("--content", required=True)
     i.set_defaults(func=cmd_intercept)
 
-    init = sub.add_parser("init", help="Print a minimal integration snippet")
+    init = sub.add_parser("init", help="Print a minimal integration snippet", parents=[common])
     init.set_defaults(func=cmd_init)
 
     return p
@@ -74,6 +75,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[list[str]] = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+
+    # Make the CLI forgiving about flag ordering.
+    # Users often type: `neurofence health --url http://...`.
+    # Argparse only supports "global" options before the subcommand, so we
+    # normalize `--url/--timeout` that appear before the subcommand by moving
+    # them after it.
+    if argv and not any(a in ("-h", "--help") for a in argv):
+        commands = {"health", "intercept", "init"}
+        cmd_index = next((i for i, a in enumerate(argv) if a in commands), None)
+        if cmd_index is not None and cmd_index > 0:
+            argv = [argv[cmd_index], *argv[:cmd_index], *argv[cmd_index + 1 :]]
+
     parser = build_parser()
     args = parser.parse_args(argv)
     return int(args.func(args))
